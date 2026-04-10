@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Breeding Seasons</h1>
+        {% if current_user.role in ['admin', 'super_user'] %}
+        <a href="{{ url_for('main.add_season') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle-fill me-2"></i>Add New Season
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">All Recorded Seasons</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Season Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Event Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for season in seasons %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('main.season_detail', season_id=season.id) }}">{{ season.name }}</a>
+                            </td>
+                            <td>{{ season.start_date.strftime('%Y-%m-%d') if season.start_date else 'N/A' }}</td>
+                            <td>{{ season.end_date.strftime('%Y-%m-%d') if season.end_date else 'Ongoing' }}</td>
+                            <td><span class="badge bg-info">{{ season.events.count() }}</span></td>
+                            <td>
+                                <a href="{{ url_for('main.season_detail', season_id=season.id) }}" class="btn btn-info btn-sm" title="View Details">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No breeding seasons have been created yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">{{ legend }}</h1>
+    <h5 class="mb-4">For Season: <a href="{{ url_for('main.season_detail', season_id=season.id) }}">{{ season.name }}</a></h5>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <fieldset class="row g-3">
+                    <div class="col-md-6">
+                        {{ form.ewe_id.label(class="form-label") }}
+                        {{ form.ewe_id(class="form-select " + ('is-invalid' if form.ewe_id.errors else '')) }}
+                        {% if form.ewe_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.ewe_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.sire_id.label(class="form-label") }}
+                        {{ form.sire_id(class="form-select " + ('is-invalid' if form.sire_id.errors else '')) }}
+                        {% if form.sire_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.sire_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.exposure_date.label(class="form-label") }}
+                        {{ form.exposure_date(class="form-control " + ('is-invalid' if form.exposure_date.errors else '')) }}
+                        {% if form.exposure_date.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.exposure_date.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.scan_date.label(class="form-label") }}
+                        {{ form.scan_date(class="form-control " + ('is-invalid' if form.scan_date.errors else '')) }}
+                        {% if form.scan_date.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.scan_date.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.scan_result.label(class="form-label") }}
+                        {{ form.scan_result(class="form-select " + ('is-invalid' if form.scan_result.errors else '')) }}
+                        {% if form.scan_result.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.scan_result.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.expected_due_date.label(class="form-label") }}
+                        {{ form.expected_due_date(class="form-control " + ('is-invalid' if form.expected_due_date.errors else '')) }}
+                        {% if form.expected_due_date.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.expected_due_date.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </fieldset>
+                
+                <div class="mt-4">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('main.season_detail', season_id=season.id) }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

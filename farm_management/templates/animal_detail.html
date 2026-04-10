@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Animal Details: <strong>{{ animal.tag_id }}</strong></h1>
+        <div>
+            {% if current_user.role in ['admin', 'super_user'] %}
+            <a href="{{ url_for('main.edit_animal', animal_id=animal.id) }}" class="btn btn-warning"><i class="bi bi-pencil-square me-2"></i>Edit</a>
+            {% endif %}
+            <a href="{{ url_for('main.list_animals') }}" class="btn btn-secondary"><i class="bi bi-arrow-left me-2"></i>Back to List</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Details Card -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ animal.name or 'Unnamed Animal' }}</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Tag ID</dt>
+                        <dd class="col-sm-9">{{ animal.tag_id }}</dd>
+
+                        <dt class="col-sm-3">Species</dt>
+                        <dd class="col-sm-9">{{ animal.species|capitalize }}</dd>
+
+                        <dt class="col-sm-3">Gender</dt>
+                        <dd class="col-sm-9">{{ animal.gender|capitalize }}</dd>
+
+                        <dt class="col-sm-3">Date of Birth</dt>
+                        <dd class="col-sm-9">{{ animal.date_of_birth.strftime('%B %d, %Y') if animal.date_of_birth else 'Unknown' }}</dd>
+
+                        <dt class="col-sm-3">Life Stage</dt>
+                        <dd class="col-sm-9"><span class="badge bg-info">{{ animal.life_stage }}</span></dd>
+                        
+                        <dt class="col-sm-3">Animal Status</dt>
+                        <dd class="col-sm-9">
+                            {% if animal.animal_status == 'Pregnant' %}
+                                <span class="badge bg-primary">{{ animal.animal_status }}</span>
+                            {% elif animal.animal_status == 'Lactating' %}
+                                <span class="badge bg-warning text-dark">{{ animal.animal_status }}</span>
+                            {% elif animal.animal_status in ['Sold', 'Deceased', 'Slaughtered'] %}
+                                <span class="badge bg-secondary">{{ animal.animal_status }}</span>
+                            {% else %}
+                                 <span class="badge bg-success">{{ animal.animal_status }}</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-3">Notes</dt>
+                        <dd class="col-sm-9">{{ animal.notes or 'N/A' }}</dd>
+                        
+                        <dt class="col-sm-3">Record Created</dt>
+                        <dd class="col-sm-9">{{ animal.created_at.strftime('%Y-%m-%d') }} by {{ animal.created_by.username }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Family Tree Card -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-diagram-3-fill me-2"></i>Genealogy</h6>
+                </div>
+                <div class="card-body">
+                    <h5>Parents</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">
+                            <strong>Sire (Father):</strong> 
+                            {% set sire = animal.get_sire() %}
+                            {% if sire %}
+                                <a href="{{ url_for('main.animal_detail', animal_id=sire.id) }}">{{ sire.tag_id }}</a>
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Dam (Mother):</strong> 
+                            {% set dam = animal.get_dam() %}
+                            {% if dam %}
+                                <a href="{{ url_for('main.animal_detail', animal_id=dam.id) }}">{{ dam.tag_id }}</a>
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </li>
+                    </ul>
+
+                    <h5>Direct Offspring</h5>
+                     <ul class="list-group list-group-flush">
+                        {% if animal.children %}
+                            {% for parentage_link in animal.children %}
+                                <li class="list-group-item">
+                                    <a href="{{ url_for('main.animal_detail', animal_id=parentage_link.child.id) }}">{{ parentage_link.child.tag_id }}</a> ({{ parentage_link.child.gender|capitalize }})
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                             <li class="list-group-item">No recorded offspring.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

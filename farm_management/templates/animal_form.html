@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">{{ legend }}</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <fieldset class="row g-3">
+                    <!-- Animal Identity -->
+                    <div class="col-md-6">
+                        {{ form.tag_id.label(class="form-label") }}
+                        {{ form.tag_id(class="form-control " + ('is-invalid' if form.tag_id.errors else '')) }}
+                        {% if form.tag_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.tag_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                    </div>
+
+                    <!-- Animal Details -->
+                    <div class="col-md-4">
+                        {{ form.species.label(class="form-label") }}
+                        {{ form.species(class="form-select") }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.gender.label(class="form-label") }}
+                        {{ form.gender(class="form-select") }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.date_of_birth.label(class="form-label") }}
+                        {{ form.date_of_birth(class="form-control " + ('is-invalid' if form.date_of_birth.errors else '')) }}
+                         {% if form.date_of_birth.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.date_of_birth.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Parentage with Error Messages -->
+                     <div class="col-md-6">
+                        {{ form.sire_id.label(class="form-label") }}
+                        {{ form.sire_id(class="form-select " + ('is-invalid' if form.sire_id.errors else ''), id="sire_select") }}
+                        {% if form.sire_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.sire_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.dam_id.label(class="form-label") }}
+                        {{ form.dam_id(class="form-select " + ('is-invalid' if form.dam_id.errors else ''), id="dam_select") }}
+                        {% if form.dam_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.dam_id.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Compatibility Warning Area -->
+                    <div id="compatibility-warning" class="col-12 mt-3" style="display: none;"></div>
+
+                    <!-- Status & Notes -->
+                     <div class="col-md-12">
+                        {{ form.animal_status.label(class="form-label") }}
+                        {{ form.animal_status(class="form-select " + ('is-invalid' if form.animal_status.errors else '')) }}
+                        {% if form.animal_status.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.animal_status.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control", rows="4") }}
+                    </div>
+                </fieldset>
+                
+                <div class="mt-4">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('main.list_animals') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sireSelect = document.getElementById('sire_select');
+    const damSelect = document.getElementById('dam_select');
+    const warningDiv = document.getElementById('compatibility-warning');
+
+    function checkCompatibility() {
+        // Ensure both elements exist before trying to read their value
+        if (!sireSelect || !damSelect) {
+            return;
+        }
+
+        const sireId = sireSelect.value;
+        const damId = damSelect.value;
+
+        // Only check if both a sire and a dam are selected and are not 'Unknown'
+        if (sireId && sireId !== '0' && damId && damId !== '0') {
+            fetch(`/api/check_compatibility?sire_id=${sireId}&dam_id=${damId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_compatible === false) {
+                        warningDiv.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong><i class="bi bi-exclamation-triangle-fill"></i> CRITICAL WARNING:</strong> ${data.message}
+                            </div>
+                        `;
+                        warningDiv.style.display = 'block';
+                    } else {
+                         warningDiv.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong><i class="bi bi-check-circle-fill"></i> Compatible Pairing:</strong> This pairing has no direct inbreeding conflicts.
+                            </div>
+                        `;
+                        warningDiv.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking compatibility:', error);
+                    warningDiv.style.display = 'none';
+                });
+        } else {
+            // Hide warning if one or both are not selected
+            warningDiv.style.display = 'none';
+        }
+    }
+
+    // Add event listeners only if the elements exist
+    if (sireSelect) {
+        sireSelect.addEventListener('change', checkCompatibility);
+    }
+    if (damSelect) {
+        damSelect.addEventListener('change', checkCompatibility);
+    }
+    
+    // Initial check on page load (for edit forms)
+    checkCompatibility();
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Breeding Season: <strong>{{ season.name }}</strong></h1>
+            <p class="mb-0 text-muted">
+                {{ season.start_date.strftime('%d %b %Y') if season.start_date else '' }} - 
+                {{ season.end_date.strftime('%d %b %Y') if season.end_date else '' }}
+            </p>
+        </div>
+        <a href="{{ url_for('main.add_mating_event', season_id=season.id) }}" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-circle-fill me-2"></i>Record Mating Event
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Recorded Mating Events</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Ewe</th>
+                            <th>Sire</th>
+                            <th>Exposure Date</th>
+                            <th>Scan Date</th>
+                            <th>Scan Result</th>
+                            <th>Expected Due Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td><a href="{{ url_for('main.animal_detail', animal_id=event.ewe.id) }}">{{ event.ewe.tag_id }}</a></td>
+                            <td><a href="{{ url_for('main.animal_detail', animal_id=event.sire.id) }}">{{ event.sire.tag_id }}</a></td>
+                            <td>{{ event.exposure_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ event.scan_date.strftime('%Y-%m-%d') if event.scan_date else 'N/A' }}</td>
+                            <td>{{ event.scan_result or 'N/A' }}</td>
+                            <td>{{ event.expected_due_date.strftime('%Y-%m-%d') if event.expected_due_date else 'N/A' }}</td>
+                            <td>
+                                <form action="{{ url_for('main.delete_mating_event', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No mating events have been recorded for this season yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
