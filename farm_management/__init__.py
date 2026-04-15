@@ -1,6 +1,6 @@
 # farm_management/__init__.py
 import os
-from flask import Flask
+from flask import Flask, jsonify, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
@@ -95,6 +95,13 @@ def create_app():
     login_manager = LoginManager()
     login_manager.login_view = 'main.login'  # The route to redirect to for login
     login_manager.init_app(app)
+
+    @login_manager.unauthorized_handler
+    def unauthorized_handler():
+        wants_json = request.is_json or 'application/json' in (request.headers.get('Accept') or '')
+        if wants_json:
+            return jsonify({'error': 'unauthorized', 'message': 'Authentication required.'}), 401
+        return redirect(url_for('main.login'))
 
     # --- User Loader ---
     # This function is used by Flask-Login to load a user from the database.
