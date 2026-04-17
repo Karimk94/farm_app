@@ -13,6 +13,16 @@ from datetime import date, datetime
 main = Blueprint('main', __name__)
 
 
+@main.route('/health')
+def health():
+    return jsonify({
+        'status': 'ok',
+        'message': 'Farm management server is reachable',
+        'host': request.host,
+        'url': request.host_url.rstrip('/'),
+    })
+
+
 def wants_json_response():
     return request.is_json or 'application/json' in (request.headers.get('Accept') or '')
 
