@@ -12,5 +12,6 @@ app = create_app()
 if __name__ == '__main__':
     # The debug=True flag allows for live reloading and provides detailed error pages.
     # It should be set to False in a production environment.
-    app.run(debug=True)
+    # Bind to all network interfaces so other devices on the same Wi-Fi/hotspot can reach it.
+    app.run(debug=True, host='0.0.0.0', port=5000)
 
