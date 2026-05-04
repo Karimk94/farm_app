@@ -106,17 +106,80 @@ To make the backend accessible from the mobile app over the internet, use Cloudf
 
 ### Alternative: Serveo (Simple SSH-based tunneling)
 
-Serveo provides free tunneling via SSH:
+Serveo provides free tunneling via SSH.
+
+1. Generate an SSH key if you have not already:
+   ```bash
+   ssh-keygen
+   ```
+   Accept the default path and press Enter through the prompts.
+
+2. Start the tunnel with your reserved subdomain:
+   ```bash
+   ssh -R farmapp:80:localhost:5000 serveo.net
+   ```
+   This should map your app to `https://farmapp.serveousercontent.com`.
+
+If Serveo still shows a random URL such as `https://0a996384d7124b3b-86-98-11-20.serveousercontent.com`, then your key has not been registered for the reserved name yet, the key was registered under a different Serveo account, or the SSH session is still using an old or wrong key.
+
+If you already registered the key, do this:
+
+1. Close the current tunnel session (Ctrl+C).
+2. Verify the public key fingerprint from your local file:
+   ```bash
+   ssh-keygen -E sha256 -lf "%USERPROFILE%\.ssh\id_ed25519.pub"
+   ```
+3. Confirm that fingerprint matches the one shown in the Serveo console.
+4. Restart the tunnel with the same registered key:
+   ```bash
+   ssh -i "%USERPROFILE%\.ssh\id_ed25519" -o IdentitiesOnly=yes -R farmapp:80:localhost:5000 serveo.net
+   ```
+
+If the issue persists, run the connection with verbose output:
 
 ```bash
-ssh -R 80:localhost:5000 serveo.net
+ssh -v -i "%USERPROFILE%\.ssh\id_ed25519" -o IdentitiesOnly=yes -R farmapp:80:localhost:5000 serveo.net
 ```
 
-This immediately gives you a URL like `https://3d72f62e66a26bed-5-30-201-24.serveousercontent.com`
+Look for these lines in the output:
+- `Offering public key: ...` (should show your registered key)
+- `Authenticated to serveo.net using "keyboard-interactive"` or `publickey`
+- `remote forward success for: listen farmapp:80`
+
+If Serveo still asks you to register the key, then the key is not recognized by the Serveo account you are connecting with. Check that you registered it under the same Google/GitHub account and the same fingerprint, then try again.
+
+### Manual Key Registration in Serveo Console
+
+If the automatic registration link doesn't work or you need to add the key manually:
+
+1. Go to https://console.serveo.net
+2. Log in with your Google or GitHub account (use the same account each time)
+3. Go to the "SSH Keys" section
+4. Click "Add SSH Key" or "Add Key"
+5. Copy your public key content:
+   ```bash
+   type "%USERPROFILE%\.ssh\id_ed25519.pub"
+   ```
+   This will output something like:
+   ```
+   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmJy8HqEXAMPLEKEYCONTENT kwahe@Karim
+   ```
+6. Paste the **entire line** (starting with `ssh-ed25519`) into the key field
+7. Click Save or Add
+8. Go to "Reserved Names" section
+9. Click "Reserve Name" or "Add Reserved Name"
+10. Enter `farmapp` as the name
+11. Click Reserve or Save
+12. Restart the SSH tunnel:
+    ```bash
+    ssh -i "%USERPROFILE%\.ssh\id_ed25519" -o IdentitiesOnly=yes -R farmapp:80:localhost:5000 serveo.net
+    ```
+
+If you see "Key already exists" when adding, it means the key is already registered - just proceed to reserve the name.
 
 Keep this command running to maintain the tunnel.
 
-> Note: Serveo shows a warning page for free tunnels. Create a free account at https://console.serveo.net to remove warnings and reserve names.
+> Note: Serveo requires an SSH key for fixed hostnames. After registering the public key at https://console.serveo.net, restart the SSH tunnel so Serveo can use that key for `farmapp`.
 
 ## 5. Database
 
